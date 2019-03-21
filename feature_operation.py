@@ -23,6 +23,7 @@ class FeatureOperator:
         if not os.path.exists(settings.OUTPUT_FOLDER):
             os.makedirs(os.path.join(settings.OUTPUT_FOLDER, 'image'))
         self.data = SegmentationData(settings.DATA_DIRECTORY, categories=settings.CATAGORIES)
+        #TODO change this to a fewshot loader I guess
         self.loader = SegmentationPrefetcher(self.data,categories=['image'],once=True,batch_size=settings.BATCH_SIZE)
         self.mean = [109.5388,118.6897,124.6901]
 
@@ -139,6 +140,7 @@ class FeatureOperator:
         start_time = time.time()
         last_batch_time = start_time
         for batch in pd.batches():
+            if count>100:break #TODO temp
             batch_time = time.time()
             rate = (count - start) / (batch_time - start_time + 1e-15)
             batch_rate = len(batch) / (batch_time - last_batch_time + 1e-15)

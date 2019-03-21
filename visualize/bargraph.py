@@ -41,23 +41,28 @@ def bar_graph_svg(ed, blob,tally_result=None,
                     barheight=100,barwidth=12,
                     order=None,
                     show_labels=True,
-                    threshold=0.04,
+                    threshold=0.01,
                     rendered_order=None,
                     save=None):
     # ['unit', 'category', 'label', 'score']
     # Examine each label
     label_cats = {}
     label_score = {}
-    for record in tally_result:
-        if float(record['score']) < threshold:
-            continue
-        label = record['label']
-        if label not in label_cats:
-            label_cats[label] = []
-        label_cats[label].append(record['category'])
-        if (label not in label_score
-                or label_score[label] < float(record['score'])):
-            label_score[label] = float(record['score'])
+    while True:
+        for record in tally_result:
+            if float(record['score']) < threshold:
+                continue
+            label = record['label']
+            if label not in label_cats:
+                label_cats[label] = []
+            label_cats[label].append(record['category'])
+            if (label not in label_score
+                    or label_score[label] < float(record['score'])):
+                label_score[label] = float(record['score'])
+        if len(label_cats) == 0: # Adjust threshold if nothing was found
+            threshold = threshold * 0.5
+        else:
+            break
     # Count each label, and note its cateogry
     label_counts = {}
     for label, cats in label_cats.items():

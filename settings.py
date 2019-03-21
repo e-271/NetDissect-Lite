@@ -2,15 +2,24 @@
 GPU = True                                  # running on GPU is highly suggested
 TEST_MODE = False                           # turning on the testmode means the code will run on a small dataset.
 CLEAN = True                               # set to "True" if you want to clean the temporary large files after generating result
-MODEL = 'resnet18'                          # model arch: resnet18, alexnet, resnet50, densenet161
-DATASET = 'places365'                       # model trained on: places365 or imagenet
+MODEL = 'genotype'                          # model arch: resnet18, alexnet, resnet50, densenet161
+DATASET = 'miniImagenet' #TODO where is this being used?
+#MODEL = 'resnet18'
+#DATASET = 'places365'                         # model trained on: places365 or imagenet
 QUANTILE = 0.005                            # the threshold used for activation
-SEG_THRESHOLD = 0.04                        # the threshold used for visualization
-SCORE_THRESHOLD = 0.04                      # the threshold used for IoU score (in HTML file)
+SEG_THRESHOLD = 0.01                        # the threshold used for visualization
+SCORE_THRESHOLD = 0.01                      # the threshold used for IoU score (in HTML file)
 TOPN = 10                                   # to show top N image with highest activation for each unit
 PARALLEL = 1                                # how many process is used for tallying (Experiments show that 1 is the fastest)
 CATAGORIES = ["object", "part","scene","texture","color"] # concept categories that are chosen to detect: "object", "part", "scene", "material", "texture", "color"
-OUTPUT_FOLDER = "result/pytorch_"+MODEL+"_"+DATASET # result will be stored in this folder
+#OUTPUT_FOLDER = "result/pytorch_"+MODEL+"_"+DATASET # result will be stored in this folder
+# Fewshot stuff
+N_SHOT = 1
+N_WAY = 5
+CHANNELS = 64
+LAYERS = 4
+LAYER = 3
+GENE_NAME = 'Darts1'
 
 ########### sub settings ###########
 # In most of the case, you don't have to change them.
@@ -36,6 +45,8 @@ if DATASET == 'places365':
     NUM_CLASSES = 365
 elif DATASET == 'imagenet':
     NUM_CLASSES = 1000
+elif DATASET == 'miniImagenet':
+    NUM_CLASSES = N_WAY
 if MODEL == 'resnet18':
     FEATURE_NAMES = ['layer4']
     if DATASET == 'places365':
@@ -54,6 +65,12 @@ elif MODEL == 'resnet50':
     if DATASET == 'places365':
         MODEL_FILE = 'zoo/whole_resnet50_places365_python36.pth.tar'
         MODEL_PARALLEL = False
+elif MODEL == 'genotype':
+    FEATURE_NAMES = ['junk']
+    MODEL_FILE = 'best_model.tar'
+    MODEL_PARALLEL = False
+
+OUTPUT_FOLDER = "result/pytorch_" + MODEL + "_" + DATASET + "_" + FEATURE_NAMES[0]  # result will be stored in this folder
 
 if TEST_MODE:
     WORKERS = 1
@@ -68,3 +85,12 @@ else:
     TALLY_BATCH_SIZE = 16
     TALLY_AHEAD = 4
     INDEX_FILE = 'index.csv'
+
+
+def init(model):
+    global FEATURE_NAMES
+    global OUTPUT_FOLDER
+    if model == 'genotype':
+        FEATURE_NAMES = ['cell%d' % LAYER]
+
+    OUTPUT_FOLDER = "result/pytorch_" + MODEL + "_" + GENE_NAME + "_" + DATASET + "_" + FEATURE_NAMES[0]  # result will be stored in this folder
